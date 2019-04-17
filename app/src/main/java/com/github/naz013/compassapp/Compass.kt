@@ -9,19 +9,15 @@ import android.hardware.Sensor.*
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
 import android.view.Surface.*
 import android.view.WindowManager
 import androidx.annotation.Nullable
 import timber.log.Timber
 
-
-class Compass(context: Context, compassListener: CompassListener) : SensorEventListener {
-
-    private var mContext: Context
+class Compass(private val context: Context, compassListener: CompassListener) : SensorEventListener {
 
     // Sensors
-    private var mSensorManager: SensorManager
+    private var mSensorManager: SensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
     private var mRotationVectorSensor: Sensor?
     private var mMagnetometerSensor: Sensor?
     private var mAccelerometerSensor: Sensor?
@@ -69,9 +65,7 @@ class Compass(context: Context, compassListener: CompassListener) : SensorEventL
     }
 
     init {
-        mContext = context
         // Sensors
-        mSensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
         mMagnetometerSensor = mSensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
         mAccelerometerSensor = mSensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         mRotationVectorSensor = mSensorManager.getDefaultSensor(TYPE_ROTATION_VECTOR)
@@ -80,32 +74,16 @@ class Compass(context: Context, compassListener: CompassListener) : SensorEventL
         mCompassListener = compassListener
     }
 
-    /**
-     * Factory method that returns a new [Compass] instance.
-     * @param context the current [Context].
-     * @param compassListener the listener for this [Compass] events.
-     * @return a new [Compass] instance or **null** if the device does not have the required sensors.
-     */
-    @Nullable
-    fun newInstance(context: Context, compassListener: CompassListener): Compass? {
-        val compass = Compass(context, compassListener)
-        return if (compass.hasRequiredSensors()) {
-            compass
-        } else {
-            null
-        }
-    }
-
     // Check that the device has the required sensors
     private fun hasRequiredSensors(): Boolean {
         return if (mRotationVectorSensor != null) {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Sensor.TYPE_ROTATION_VECTOR found")
+            Timber.d("Sensor.TYPE_ROTATION_VECTOR found")
             true
         } else if (mMagnetometerSensor != null && mAccelerometerSensor != null) {
-            if (BuildConfig.DEBUG) Log.d(TAG, "Sensor.TYPE_MAGNETIC_FIELD and Sensor.TYPE_ACCELEROMETER found")
+            Timber.d("Sensor.TYPE_MAGNETIC_FIELD and Sensor.TYPE_ACCELEROMETER found")
             true
         } else {
-            if (BuildConfig.DEBUG) Log.d(TAG, "The device does not have the required sensors")
+            Timber.d("The device does not have the required sensors")
             false
         }
     }
@@ -159,7 +137,7 @@ class Compass(context: Context, compassListener: CompassListener) : SensorEventL
             if (event.sensor.type == TYPE_ROTATION_VECTOR) {
                 // Only use rotation vector sensor if it is working on this device
                 if (!mUseRotationVectorSensor) {
-                    if (BuildConfig.DEBUG) Timber.d("Using Sensor.TYPE_ROTATION_VECTOR (more precise compass data)")
+                    Timber.d("Using Sensor.TYPE_ROTATION_VECTOR (more precise compass data)")
                     mUseRotationVectorSensor = true
                 }
                 // Smooth values
@@ -189,7 +167,7 @@ class Compass(context: Context, compassListener: CompassListener) : SensorEventL
             // Calculate azimuth, pitch and roll values from the orientation[] array
             // Correct values depending on the screen rotation
             val screenRotation =
-                (mContext.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+                (context.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
             mAzimuthDegrees = Math.toDegrees(orientation[0].toDouble()).toFloat()
             if (screenRotation == ROTATION_0) {
                 mPitchDegrees = Math.toDegrees(orientation[1].toDouble()).toFloat()
@@ -260,9 +238,24 @@ class Compass(context: Context, compassListener: CompassListener) : SensorEventL
     }
 
     companion object {
-        private val TAG = Compass::class.java.simpleName
-        private val ROTATION_VECTOR_SMOOTHING_FACTOR = 0.5f
-        private val GEOMAGNETIC_SMOOTHING_FACTOR = 0.4f
-        private val GRAVITY_SMOOTHING_FACTOR = 0.1f
+        private const val ROTATION_VECTOR_SMOOTHING_FACTOR = 0.5f
+        private const val GEOMAGNETIC_SMOOTHING_FACTOR = 0.4f
+        private const val GRAVITY_SMOOTHING_FACTOR = 0.1f
+
+        /**
+         * Factory method that returns a new [Compass] instance.
+         * @param context the current [Context].
+         * @param compassListener the listener for this [Compass] events.
+         * @return a new [Compass] instance or **null** if the device does not have the required sensors.
+         */
+        @Nullable
+        fun newInstance(context: Context, compassListener: CompassListener): Compass? {
+            val compass = Compass(context, compassListener)
+            return if (compass.hasRequiredSensors()) {
+                compass
+            } else {
+                null
+            }
+        }
     }
 }
