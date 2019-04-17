@@ -1,4 +1,4 @@
-package com.github.naz013.compassapp
+package com.github.naz013.compassapp.utils
 
 import android.app.Activity
 import android.content.Context
@@ -141,7 +141,9 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
                     mUseRotationVectorSensor = true
                 }
                 // Smooth values
-                mRotationVector = exponentialSmoothing(event.values, mRotationVector, ROTATION_VECTOR_SMOOTHING_FACTOR)
+                mRotationVector = exponentialSmoothing(event.values, mRotationVector,
+                    ROTATION_VECTOR_SMOOTHING_FACTOR
+                )
                 // Calculate the rotation matrix
                 val rotationMatrix = FloatArray(9)
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
@@ -149,10 +151,14 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
                 SensorManager.getOrientation(rotationMatrix, orientation)
             } else if (!mUseRotationVectorSensor && (event.sensor.type == TYPE_MAGNETIC_FIELD || event.sensor.type == TYPE_ACCELEROMETER)) {
                 if (event.sensor.type == TYPE_MAGNETIC_FIELD) {
-                    mGeomagnetic = exponentialSmoothing(event.values, mGeomagnetic, GEOMAGNETIC_SMOOTHING_FACTOR)
+                    mGeomagnetic = exponentialSmoothing(event.values, mGeomagnetic,
+                        GEOMAGNETIC_SMOOTHING_FACTOR
+                    )
                 }
                 if (event.sensor.type == TYPE_ACCELEROMETER) {
-                    mGravity = exponentialSmoothing(event.values, mGravity, GRAVITY_SMOOTHING_FACTOR)
+                    mGravity = exponentialSmoothing(event.values, mGravity,
+                        GRAVITY_SMOOTHING_FACTOR
+                    )
                 }
                 // Calculate the rotation and inclination matrix
                 val rotationMatrix = FloatArray(9)

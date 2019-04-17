@@ -2,6 +2,7 @@ package com.github.naz013.compassapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.github.naz013.compassapp.utils.Compass
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity(), Compass.CompassListener {
@@ -22,6 +23,6 @@ class MainActivity : AppCompatActivity(), Compass.CompassListener {
     }
 
     override fun onOrientationChanged(azimuth: Float, pitch: Float, roll: Float) {
-        Timber.d("onOrientationChanged: az -> $azimuth, pitch -> $pitch, roll -> $roll")
+//        Timber.d("onOrientationChanged: az -> $azimuth, pitch -> $pitch, roll -> $roll")
     }
 }
