@@ -1,6 +1,5 @@
 package com.github.naz013.compassapp.utils
 
-import android.app.Activity
 import android.content.Context
 import android.content.Context.SENSOR_SERVICE
 import android.content.Context.WINDOW_SERVICE
@@ -12,9 +11,10 @@ import android.hardware.SensorManager
 import android.view.Surface.*
 import android.view.WindowManager
 import androidx.annotation.Nullable
+import androidx.lifecycle.MutableLiveData
 import timber.log.Timber
 
-class Compass(private val context: Context, compassListener: CompassListener) : SensorEventListener {
+class Compass(private val context: Context) : SensorEventListener {
 
     // Sensors
     private var mSensorManager: SensorManager = context.getSystemService(SENSOR_SERVICE) as SensorManager
@@ -32,8 +32,6 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
     private var mGeomagnetic = FloatArray(3)
     private var mGravity = FloatArray(3)
 
-    // Listener
-    private var mCompassListener: CompassListener
     // The minimum difference in degrees with the last orientation value for the CompassListener to be notified
     private var mAzimuthSensibility: Float = 0.toFloat()
     private var mPitchSensibility: Float = 0.toFloat()
@@ -43,35 +41,13 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
     private var mLastPitchDegrees: Float = 0.toFloat()
     private var mLastRollDegrees: Float = 0.toFloat()
 
-    /**
-     * Interface definition for [Compass] callbacks.
-     */
-    interface CompassListener {
-        /**
-         * Called whenever the device orientation has changed, providing azimuth, pitch and roll values taking into account the screen orientation of the device.
-         * @param azimuth the azimuth of the device (East of the magnetic North = counterclockwise), in degrees, from 0° to 360°.
-         * @param pitch the pitch (vertical inclination) of the device, in degrees, from -180° to 180°.<br></br>
-         * Angle of rotation about the x axis. This value represents the angle between a plane parallel to the device's screen and a plane parallel to the ground.<br></br>
-         * Equals 0° if the device top and bottom edges are on the same level.<br></br>
-         * Equals -90° if the device top edge is up and the device bottom edge is down (such as when holding the device to take a picture towards the horizon).<br></br>
-         * Equals 90° if the device top edge is down and the device bottom edge is up.
-         * @param roll the roll (horizontal inclination) of the device, in degrees, from -90° to 90°.<br></br>
-         * Angle of rotation about the y axis. This value represents the angle between a plane perpendicular to the device's screen and a plane perpendicular to the ground.<br></br>
-         * Equals 0° if the device left and right edges are on the same level.<br></br>
-         * Equals -90° if the device right edge is up and the device left edge is down.<br></br>
-         * Equals 90° if the device right edge is down and the device left edge is up.
-         */
-        fun onOrientationChanged(azimuth: Float, pitch: Float, roll: Float)
-    }
+    val angle: MutableLiveData<Float> = MutableLiveData()
 
     init {
         // Sensors
         mMagnetometerSensor = mSensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD)
         mAccelerometerSensor = mSensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
         mRotationVectorSensor = mSensorManager.getDefaultSensor(TYPE_ROTATION_VECTOR)
-
-        // Listener
-        mCompassListener = compassListener
     }
 
     // Check that the device has the required sensors
@@ -88,13 +64,6 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
         }
     }
 
-    /**
-     * Starts the [Compass].
-     * Must be called in [Activity.onResume].
-     * @param azimuthSensibility the minimum difference in degrees with the last azimuth measure for the [CompassListener] to be notified. Set to 0 (default value) to be notified of the slightest change, set to 360 to never be notified.
-     * @param pitchSensibility the minimum difference in degrees with the last pitch measure for the [CompassListener] to be notified. Set to 0 (default value) to be notified of the slightest change, set to 360 to never be notified.
-     * @param rollSensibility the minimum difference in degrees with the last roll measure for the [CompassListener] to be notified. Set to 0 (default value) to be notified of the slightest change, set to 360 to never be notified.
-     */
     fun start(azimuthSensibility: Float, pitchSensibility: Float, rollSensibility: Float) {
         mAzimuthSensibility = azimuthSensibility
         mPitchSensibility = pitchSensibility
@@ -110,18 +79,10 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
         }
     }
 
-    /**
-     * Starts the [Compass] with default sensibility values.
-     * Must be called in [Activity.onResume].
-     */
     fun start() {
         start(0f, 0f, 0f)
     }
 
-    /**
-     * Stops the [Compass].
-     * Must be called in [Activity.onPause].
-     */
     fun stop() {
         mAzimuthSensibility = 0f
         mPitchSensibility = 0f
@@ -214,24 +175,15 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
                 mLastAzimuthDegrees = mAzimuthDegrees
                 mLastPitchDegrees = mPitchDegrees
                 mLastRollDegrees = mRollDegrees
-                mCompassListener.onOrientationChanged(mAzimuthDegrees, mPitchDegrees, mRollDegrees)
+                angle.postValue(mAzimuthDegrees)
             }
         }
     }
 
 
-    // SensorEventListener
     override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-        // Nothing to do
     }
 
-    /**
-     * Exponential smoothing of data series, acting as a low-pass filter in order to remove high-frequency noise.
-     * @param newValue the new data set.
-     * @param lastValue the last data set.
-     * @param alpha the smoothing factor. 0 < alpha < 1. If alpha = 0, the data will never change (lastValue = newValue). If alpha = 1, no smoothing at all will be applied (lastValue = newValue).
-     * @return output the new data entry, smoothened.
-     */
     private fun exponentialSmoothing(newValue: FloatArray, lastValue: FloatArray?, alpha: Float): FloatArray {
         val output = FloatArray(newValue.size)
         if (lastValue == null) {
@@ -248,15 +200,9 @@ class Compass(private val context: Context, compassListener: CompassListener) : 
         private const val GEOMAGNETIC_SMOOTHING_FACTOR = 0.4f
         private const val GRAVITY_SMOOTHING_FACTOR = 0.1f
 
-        /**
-         * Factory method that returns a new [Compass] instance.
-         * @param context the current [Context].
-         * @param compassListener the listener for this [Compass] events.
-         * @return a new [Compass] instance or **null** if the device does not have the required sensors.
-         */
         @Nullable
-        fun newInstance(context: Context, compassListener: CompassListener): Compass? {
-            val compass = Compass(context, compassListener)
+        fun newInstance(context: Context): Compass? {
+            val compass = Compass(context)
             return if (compass.hasRequiredSensors()) {
                 compass
             } else {

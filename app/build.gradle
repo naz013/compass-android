@@ -18,6 +18,17 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            applicationVariants.all { variant ->
+                variant.outputs.all {
+                    def formattedDate = new Date().format('yyyy-MM-dd')
+                    def newName = outputFileName
+                    newName = newName.replace("debug", formattedDate)
+                    newName = newName.replace("app", "Compass")
+                    outputFileName = newName
+                }
+            }
+        }
     }
     packagingOptions {
         exclude 'META-INF/LICENSE'

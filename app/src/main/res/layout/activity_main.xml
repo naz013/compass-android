@@ -6,6 +6,7 @@
     tools:context=".MainActivity">
 
     <com.github.naz013.compassapp.view.DottedCompassView
+        android:id="@+id/dottedView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
