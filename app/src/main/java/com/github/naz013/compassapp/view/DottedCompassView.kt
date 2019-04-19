@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.View
 import timber.log.Timber
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
@@ -16,16 +17,18 @@ import kotlin.math.sin
 class DottedCompassView : View {
 
     private var dots: Array<Array<AngledPoint>> = arrayOf()
-    private var angleMap: Map<Float, AnglePoints> = mapOf()
+    private var angleMap: MutableMap<Float, AnglePoints> = mutableMapOf()
     private val paint: Paint = Paint()
     private var mWidth: Int = 0
     private var mHeight: Int = 0
     private var cX: Int = 0
     private var cY: Int = 0
     private val degreesCorrection = -90f
+    private var nearAngle = 270f
     var degrees = 0.0f
         set(value) {
             field = value
+            nearAngle = findNearestDegree(value)
             invalidate()
         }
 
@@ -43,6 +46,8 @@ class DottedCompassView : View {
             super.onDraw(canvas)
         } else {
 //            val millis = System.currentTimeMillis()
+            val points = angleMap[nearAngle]
+            Timber.d("onDraw: $nearAngle, $points")
             canvas.save()
             val rotationAngle = degreesCorrection - degrees
             canvas.rotate(rotationAngle, cX.toFloat(), cY.toFloat())
@@ -50,12 +55,21 @@ class DottedCompassView : View {
                 val dotArray = dots[i]
                 val alpha = 255 - (i * 15)
                 dotArray.forEach { ap ->
+                    val isN = ap.angle == 0f
                     when {
-                        ap.angle == 0f -> paint.color = Color.RED
+                        isN -> paint.color = Color.RED
                         else -> paint.color = Color.WHITE
                     }
                     paint.alpha = alpha
-                    canvas.drawCircle(ap.point.x, ap.point.y, 5f, paint)
+                    canvas.drawCircle(ap.point.x, ap.point.y, if (isN && ap.ring == 2) 10f else 5f, paint)
+                }
+            }
+            if (points != null) {
+                paint.color = Color.GREEN
+                points.points.forEach {
+                    val alpha = 255 - (it.ring * 15)
+                    paint.alpha = alpha
+                    canvas.drawCircle(it.point.x, it.point.y, 5f, paint)
                 }
             }
             canvas.restore()
@@ -78,11 +92,27 @@ class DottedCompassView : View {
         calculateDots(minRadius, radiusStep)
     }
 
+    private fun findNearestDegree(degree: Float): Float {
+        if (angleMap.isEmpty()) return 0f
+        val abs = abs(degree)
+        var nearestAngle = 0f
+        var min = 100f
+        angleMap.keys.forEach {
+            val diff = abs(it - abs)
+            if (diff < min) {
+                min = diff
+                nearestAngle = it
+            }
+        }
+        Timber.d("findNearestDegree: $degree, $abs, $nearestAngle")
+        return nearestAngle
+    }
+
     private fun calculateDots(minRadius: Float, step: Float) {
         val apb = 360f / NUM_OF_DOTS_IN_CIRCLE
         val aH = apb / 2f
         val array = mutableListOf<Array<AngledPoint>>()
-        val map = mutableMapOf<Float, AnglePoints>()
+        angleMap.clear()
         for (i in 0 until NUM_OF_CIRCLES) {
             val radius = minRadius + i * step
             val a = if (i % 2 == 0) {
@@ -93,22 +123,25 @@ class DottedCompassView : View {
             val list = mutableListOf<AngledPoint>()
             for (j in 0 until NUM_OF_DOTS_IN_CIRCLE) {
                 val angle = j * apb + a
-                val angledPoint = dotCoordinates(radius, angle)
+                val angledPoint = dotCoordinates(radius, angle, i)
                 list.add(angledPoint)
-                val anglePoints = if (map.containsKey(angle)) {
-                    map[angle] ?: AnglePoints()
+                val anglePoints = if (angleMap.containsKey(angle)) {
+                    angleMap[angle] ?: AnglePoints()
                 } else {
                     AnglePoints()
                 }
-                anglePoints.points.add(angledPoint.point)
+                anglePoints.angle = angle
+                anglePoints.points.add(angledPoint)
+                angleMap[angle] = anglePoints
             }
-//            Timber.d("calculateDots: $list")
+            Timber.d("calculateDots: $list")
             array.add(list.toTypedArray())
         }
         dots = array.toTypedArray()
+        Timber.d("calculateDots: ${angleMap.keys.toList()}")
     }
 
-    private fun dotCoordinates(radius: Float, angle: Float): AngledPoint {
+    private fun dotCoordinates(radius: Float, angle: Float, ring: Int): AngledPoint {
         val x = cX.toFloat() + radius * cos(Math.toRadians(angle.toDouble()))
         val y = cY.toFloat() + radius * sin(Math.toRadians(angle.toDouble()))
         val roundAngle = try {
@@ -117,12 +150,12 @@ class DottedCompassView : View {
             e.printStackTrace()
             0.0f
         }
-        return AngledPoint(roundAngle, PointF(x.toFloat(), y.toFloat()))
+        return AngledPoint(ring, roundAngle, PointF(x.toFloat(), y.toFloat()))
     }
 
-    data class AngledPoint(var angle: Float = 0.0f, var point: PointF = PointF(0.0f, 0.0f))
+    data class AngledPoint(var ring: Int = 0, var angle: Float = 0.0f, var point: PointF = PointF(0.0f, 0.0f))
 
-    data class AnglePoints(var angle: Float = 0.0f, var points: MutableList<PointF> = mutableListOf())
+    data class AnglePoints(var angle: Float = 0.0f, var points: MutableList<AngledPoint> = mutableListOf())
 
     companion object {
         private const val NUM_OF_CIRCLES = 15

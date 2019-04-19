@@ -3,11 +3,14 @@ package com.github.naz013.compassapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.github.naz013.compassapp.theming.ThemeViewModel
 import com.github.naz013.compassapp.utils.Compass
 import com.github.naz013.compassapp.view.DottedCompassView
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
+    private val viewModel: ThemeViewModel by viewModel()
     private lateinit var dottedCompassView: DottedCompassView
     private var compass: Compass? = null
 
