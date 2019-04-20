@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import android.util.AttributeSet
+import android.util.TypedValue
 import androidx.annotation.ColorInt
 import com.github.naz013.compassapp.theming.Palette
 import timber.log.Timber
@@ -29,6 +30,9 @@ class DottedCompassView : BaseCompassView {
     private val degreesCorrection = -90f
     private var nearAngle = 270f
 
+    private var dotSize = 5f
+    private var dotSizeBig = 10f
+
     private var bgColor = bgColor()
     private var dotColor = dotColor()
     private var northColor = northColor()
@@ -41,6 +45,9 @@ class DottedCompassView : BaseCompassView {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int): super(context, attrs, defStyleAttr) {
         paint.style = Paint.Style.FILL
         paint.color = Color.WHITE
+
+        dotSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2F, context.resources.displayMetrics)
+        dotSizeBig = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 5F, context.resources.displayMetrics)
     }
 
     override fun updateColors(palette: Palette) {
@@ -73,7 +80,7 @@ class DottedCompassView : BaseCompassView {
                         else -> paint.color = dotColor
                     }
                     paint.alpha = alpha
-                    canvas.drawCircle(ap.point.x, ap.point.y, if (ap.isAnchor) 10f else 5f, paint)
+                    canvas.drawCircle(ap.point.x, ap.point.y, if (ap.isAnchor) dotSizeBig else dotSize, paint)
                 }
             }
 
@@ -85,7 +92,7 @@ class DottedCompassView : BaseCompassView {
                     points.points.forEach {
                         val alpha = 255 - (it.ring * 15)
                         paint.alpha = alpha
-                        canvas.drawCircle(it.point.x, it.point.y, 5f, paint)
+                        canvas.drawCircle(it.point.x, it.point.y, dotSize, paint)
                     }
                 }
             }
