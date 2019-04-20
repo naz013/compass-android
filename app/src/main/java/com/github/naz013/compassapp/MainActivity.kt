@@ -1,6 +1,8 @@
 package com.github.naz013.compassapp
 
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.github.naz013.compassapp.theming.Palette
@@ -37,6 +39,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyTheme(palette: Palette) {
         compassView?.palette = palette
+        window.statusBarColor = palette.colorPrimary
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (palette.isDark) {
+                compassView?.systemUiVisibility = -View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            } else {
+                compassView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        }
     }
 
     override fun onResume() {
