@@ -6,13 +6,13 @@ import androidx.lifecycle.Observer
 import com.github.naz013.compassapp.theming.Palette
 import com.github.naz013.compassapp.theming.ThemeViewModel
 import com.github.naz013.compassapp.utils.Compass
-import com.github.naz013.compassapp.view.DottedCompassView
+import com.github.naz013.compassapp.view.BaseCompassView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: ThemeViewModel by viewModel()
-    private lateinit var dottedCompassView: DottedCompassView
+    private var compassView: BaseCompassView? = null
     private var compass: Compass? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,13 +20,13 @@ class MainActivity : AppCompatActivity() {
         compass = Compass.newInstance(this)
         compass?.angle?.observe(this, Observer {
             if (it != null) {
-                dottedCompassView.degrees = it
+                compassView?.degrees = it
             }
         })
 
         setContentView(R.layout.activity_main)
 
-        dottedCompassView = findViewById(R.id.dottedView)
+        compassView = findViewById(R.id.dottedView)
 
         viewModel.palette.observe(this, Observer {
             if (it != null) {
@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyTheme(palette: Palette) {
-        dottedCompassView.palette = palette
+        compassView?.palette = palette
     }
 
     override fun onResume() {

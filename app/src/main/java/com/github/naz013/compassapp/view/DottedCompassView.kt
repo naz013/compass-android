@@ -6,11 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PointF
 import android.util.AttributeSet
-import android.util.TypedValue
-import android.view.View
 import androidx.annotation.ColorInt
-import androidx.core.content.res.ResourcesCompat
-import com.github.naz013.compassapp.R
 import com.github.naz013.compassapp.theming.Palette
 import timber.log.Timber
 import java.util.*
@@ -19,14 +15,12 @@ import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin
 
-class DottedCompassView : View {
+class DottedCompassView : BaseCompassView {
 
     private var dots: Array<Array<AngledPoint>> = arrayOf()
     private var angleMap: MutableMap<Float, AnglePoints> = mutableMapOf()
 
     private val paint = Paint()
-    private val textPaint = Paint()
-    private val angleLabelPainter = AngleLabelPainter(textPaint)
 
     private var mWidth: Int = 0
     private var mHeight: Int = 0
@@ -40,31 +34,6 @@ class DottedCompassView : View {
     private var northColor = northColor()
     private var currentColor = currentColor()
 
-    var palette: Palette? = null
-        set(value) {
-            field = value
-            if (value != null) {
-                updateColors(value)
-            }
-            invalidate()
-        }
-
-    private fun updateColors(palette: Palette) {
-        bgColor = bgColor()
-        dotColor = dotColor()
-        northColor = northColor()
-        currentColor = currentColor()
-        angleLabelPainter.setPalette(palette)
-    }
-
-    var degrees = 0.0f
-        set(value) {
-            field = value
-            nearAngle = findNearestDegree(value)
-            angleLabelPainter.degree = value
-            invalidate()
-        }
-
     constructor(context: Context): this(context, null)
 
     constructor(context: Context, attrs: AttributeSet?): this(context, attrs, 0)
@@ -72,14 +41,19 @@ class DottedCompassView : View {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int): super(context, attrs, defStyleAttr) {
         paint.style = Paint.Style.FILL
         paint.color = Color.WHITE
+    }
 
-        textPaint.color = Color.WHITE
-        textPaint.style = Paint.Style.FILL
-        textPaint.textAlign = Paint.Align.CENTER
-        textPaint.typeface = ResourcesCompat.getFont(context, R.font.roboto_bold)
+    override fun updateColors(palette: Palette) {
+        super.updateColors(palette)
+        bgColor = bgColor()
+        dotColor = dotColor()
+        northColor = northColor()
+        currentColor = currentColor()
+    }
 
-        angleLabelPainter.textSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 30F, context.resources.displayMetrics)
-        angleLabelPainter.textSizeDegree = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 40F, context.resources.displayMetrics)
+    override fun onDegreeSet(value: Float) {
+        super.onDegreeSet(value)
+        nearAngle = findNearestDegree(value)
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -116,7 +90,7 @@ class DottedCompassView : View {
                 }
             }
             canvas.restore()
-            angleLabelPainter.draw(canvas)
+            super.onDraw(canvas)
         }
     }
 
@@ -132,13 +106,7 @@ class DottedCompassView : View {
         val radiusStep = (((max(mWidth, mHeight) * 1.3f) - (minRadius * 2f)) / 2f) / NUM_OF_CIRCLES
         Timber.d("onMeasure: radius -> $minRadius, $radiusStep")
 
-        val minInt = minRadius.toInt()
-        angleLabelPainter.bounds.left = cX - minInt
-        angleLabelPainter.bounds.top = cY - minInt
-        angleLabelPainter.bounds.right = cX + minInt
-        angleLabelPainter.bounds.bottom = cY + minInt
-        angleLabelPainter.updateBounds()
-
+        setupText(cX, cY, minRadius.toInt())
         calculateDots(minRadius, radiusStep)
     }
 
