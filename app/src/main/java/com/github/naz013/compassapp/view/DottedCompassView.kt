@@ -86,7 +86,7 @@ class DottedCompassView : BaseCompassView {
 
             if (nearAngle != 0f) {
                 val points = angleMap[nearAngle]
-                Timber.d("onDraw: $nearAngle, $points")
+//                Timber.d("onDraw: $nearAngle, $points")
                 if (points != null) {
                     paint.color = currentColor
                     points.points.forEach {
