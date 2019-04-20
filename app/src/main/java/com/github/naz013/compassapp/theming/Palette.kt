@@ -10,5 +10,6 @@ data class Palette(
     @ColorInt
     val colorSecondary: Int,
     @ColorInt
-    val colorSecondarySolid: Int
+    val colorSecondarySolid: Int,
+    val isDark: Boolean = true
 )

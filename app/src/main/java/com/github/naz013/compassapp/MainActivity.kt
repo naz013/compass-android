@@ -3,6 +3,7 @@ package com.github.naz013.compassapp
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.github.naz013.compassapp.theming.Palette
 import com.github.naz013.compassapp.theming.ThemeViewModel
 import com.github.naz013.compassapp.utils.Compass
 import com.github.naz013.compassapp.view.DottedCompassView
@@ -26,6 +27,16 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         dottedCompassView = findViewById(R.id.dottedView)
+
+        viewModel.palette.observe(this, Observer {
+            if (it != null) {
+                applyTheme(it)
+            }
+        })
+    }
+
+    private fun applyTheme(palette: Palette) {
+        dottedCompassView.palette = palette
     }
 
     override fun onResume() {

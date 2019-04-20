@@ -7,6 +7,8 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.ColorInt
+import com.github.naz013.compassapp.theming.Palette
 import timber.log.Timber
 import java.util.*
 import kotlin.math.abs
@@ -25,6 +27,20 @@ class DottedCompassView : View {
     private var cY: Int = 0
     private val degreesCorrection = -90f
     private var nearAngle = 270f
+    private var bgColor = bgColor()
+    private var dotColor = dotColor()
+    private var northColor = northColor()
+    private var currentColor = currentColor()
+
+    var palette: Palette? = null
+        set(value) {
+            field = value
+            bgColor = bgColor()
+            dotColor = dotColor()
+            northColor = northColor()
+            currentColor = currentColor()
+            invalidate()
+        }
     var degrees = 0.0f
         set(value) {
             field = value
@@ -45,9 +61,8 @@ class DottedCompassView : View {
         if (canvas == null) {
             super.onDraw(canvas)
         } else {
+            canvas.drawColor(bgColor)
 //            val millis = System.currentTimeMillis()
-            val points = angleMap[nearAngle]
-            Timber.d("onDraw: $nearAngle, $points")
             canvas.save()
             val rotationAngle = degreesCorrection - degrees
             canvas.rotate(rotationAngle, cX.toFloat(), cY.toFloat())
@@ -55,21 +70,25 @@ class DottedCompassView : View {
                 val dotArray = dots[i]
                 val alpha = 255 - (i * 15)
                 dotArray.forEach { ap ->
-                    val isN = ap.angle == 0f
                     when {
-                        isN -> paint.color = Color.RED
-                        else -> paint.color = Color.WHITE
+                        ap.angle == 0f -> paint.color = northColor
+                        else -> paint.color = dotColor
                     }
                     paint.alpha = alpha
-                    canvas.drawCircle(ap.point.x, ap.point.y, if (isN && ap.ring == 2) 10f else 5f, paint)
+                    canvas.drawCircle(ap.point.x, ap.point.y, if (ap.isAnchor) 10f else 5f, paint)
                 }
             }
-            if (points != null) {
-                paint.color = Color.GREEN
-                points.points.forEach {
-                    val alpha = 255 - (it.ring * 15)
-                    paint.alpha = alpha
-                    canvas.drawCircle(it.point.x, it.point.y, 5f, paint)
+
+            if (nearAngle != 0f) {
+                val points = angleMap[nearAngle]
+                Timber.d("onDraw: $nearAngle, $points")
+                if (points != null) {
+                    paint.color = currentColor
+                    points.points.forEach {
+                        val alpha = 255 - (it.ring * 15)
+                        paint.alpha = alpha
+                        canvas.drawCircle(it.point.x, it.point.y, 5f, paint)
+                    }
                 }
             }
             canvas.restore()
@@ -91,6 +110,18 @@ class DottedCompassView : View {
 
         calculateDots(minRadius, radiusStep)
     }
+
+    @ColorInt
+    private fun bgColor(): Int = palette?.colorPrimary ?: Color.BLACK
+
+    @ColorInt
+    private fun northColor(): Int = palette?.colorSecondary ?: Color.RED
+
+    @ColorInt
+    private fun currentColor(): Int = palette?.colorSecondarySolid ?: Color.MAGENTA
+
+    @ColorInt
+    private fun dotColor(): Int = palette?.colorOnPrimary ?: Color.WHITE
 
     private fun findNearestDegree(degree: Float): Float {
         if (angleMap.isEmpty()) return 0f
@@ -150,10 +181,10 @@ class DottedCompassView : View {
             e.printStackTrace()
             0.0f
         }
-        return AngledPoint(ring, roundAngle, PointF(x.toFloat(), y.toFloat()))
+        return AngledPoint(ring, roundAngle, PointF(x.toFloat(), y.toFloat()), roundAngle == 0f && ring == 4)
     }
 
-    data class AngledPoint(var ring: Int = 0, var angle: Float = 0.0f, var point: PointF = PointF(0.0f, 0.0f))
+    data class AngledPoint(var ring: Int = 0, var angle: Float = 0.0f, var point: PointF = PointF(0.0f, 0.0f), var isAnchor: Boolean = false)
 
     data class AnglePoints(var angle: Float = 0.0f, var points: MutableList<AngledPoint> = mutableListOf())
 
