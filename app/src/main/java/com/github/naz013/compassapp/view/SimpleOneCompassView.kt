@@ -93,7 +93,7 @@ class SimpleOneCompassView : BaseCompassView {
         cX = mWidth / 2
         cY = mHeight / 2
 
-        val radius = mWidth.toFloat() / 2f
+        val radius = mWidth.toFloat() / 2f - mShortLineLength
         setupText(cX, cY, radius.toInt())
         calculateLines(radius)
     }
@@ -110,11 +110,11 @@ class SimpleOneCompassView : BaseCompassView {
     @ColorInt
     private fun dotColor(): Int = palette?.colorOnPrimary ?: Color.WHITE
 
-    private fun calculateLines(minRadius: Float) {
+    private fun calculateLines(radius: Float) {
         angleMap.clear()
         var angle = 0f
         while (angle < 360f) {
-            angleMap[angle] = lineCoordinates(angle, minRadius)
+            angleMap[angle] = lineCoordinates(angle, radius)
             angle += 30f
         }
     }

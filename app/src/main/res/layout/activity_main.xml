@@ -15,11 +15,11 @@
     <github.chenupt.springindicator.SpringIndicator
         android:id="@+id/indicator"
         android:layout_width="156dp"
-        android:layout_height="28dp"
+        android:layout_height="10dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="16dp"
-        app:siRadiusMax="13dp"
+        app:siRadiusMax="5dp"
         app:siRadiusMin="3dp" />
 
 </RelativeLayout>
