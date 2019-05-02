@@ -2,13 +2,12 @@ package com.github.naz013.compassapp.pages
 
 import android.content.Context
 import com.github.naz013.compassapp.view.BaseCompassView
-import com.github.naz013.compassapp.view.DottedCompassView
-import com.github.naz013.compassapp.view.SimpleOneCompassView
+import com.github.naz013.compassapp.view.SimpleTwoCompassView
 
 class Simple2Fragment : PageFragment() {
 
     override fun provideCompassView(context: Context): BaseCompassView {
-        return SimpleOneCompassView(context)
+        return SimpleTwoCompassView(context)
     }
 
     companion object {

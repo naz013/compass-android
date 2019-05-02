@@ -10,8 +10,13 @@ class Prefs(context: Context) {
         get() = shared.getInt(THEME, 0)
         set(value) = shared.edit().putInt(THEME, value).apply()
 
+    var lastPage: Int
+        get() = shared.getInt(LAST_PAGE, 0)
+        set(value) = shared.edit().putInt(LAST_PAGE, value).apply()
+
     companion object {
         private const val NAME = "compass_prefs"
         private const val THEME = "theme"
+        private const val LAST_PAGE = "last_page"
     }
 }

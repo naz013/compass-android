@@ -30,6 +30,14 @@ class ThemeViewModel : ViewModel(), KoinComponent {
         return COLORS[theme]
     }
 
+    fun setLastPage(page: Int) {
+        prefs.lastPage = page
+    }
+
+    fun lastPage(): Int {
+        return prefs.lastPage
+    }
+
     companion object {
         private val COLORS = arrayOf(
             Palette(parse("#000000"), parse("#FFFFFF"), parse("#F63205"), parse("#AD2005")),

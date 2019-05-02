@@ -13,10 +13,11 @@ import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
-class SimpleOneCompassView : BaseCompassView {
+class SimpleTwoCompassView : BaseCompassView {
 
     private val paint = Paint()
     private var angleMap: MutableMap<Float, AngledLine> = mutableMapOf()
+    private var arrow: Arrow? = null
 
     private var mWidth: Int = 0
     private var mHeight: Int = 0
@@ -68,9 +69,10 @@ class SimpleOneCompassView : BaseCompassView {
             angleMap.values.forEach { al ->
                 if (al.isAnchor) {
                     paint.color = northColor
-                    val cx = (al.start.x + al.end.x) / 2f
-                    val cy = (al.start.y + al.end.y) / 2f
-                    canvas.drawCircle(cx, cy, mNorthRadius, paint)
+                    arrow?.let { ar ->
+                        canvas.drawLine(ar.start.x, ar.start.y, ar.left.x, ar.left.y, paint)
+                        canvas.drawLine(ar.start.x, ar.start.y, ar.right.x, ar.right.y, paint)
+                    }
                 } else {
                     paint.color = lineColor
                     canvas.drawLine(al.start.x, al.start.y, al.end.x, al.end.y, paint)
@@ -136,6 +138,14 @@ class SimpleOneCompassView : BaseCompassView {
         }
         if (roundAngle == 0f) {
             length = mShortLineLength
+
+            val xL = x1 + length * cos(Math.toRadians(225.0))
+            val yL = y1 + length * sin(Math.toRadians(225.0))
+
+            val xR = x1 + length * cos(Math.toRadians(135.0))
+            val yR = y1 + length * sin(Math.toRadians(135.0))
+
+            arrow = Arrow(PointF(x1.toFloat(), y1.toFloat()), PointF(xL.toFloat(), yL.toFloat()), PointF(xR.toFloat(), yR.toFloat()))
         }
         val x2 = cX.toFloat() + (radius - length) * cos(Math.toRadians(angle.toDouble()))
         val y2 = cY.toFloat() + (radius - length) * sin(Math.toRadians(angle.toDouble()))
@@ -146,6 +156,11 @@ class SimpleOneCompassView : BaseCompassView {
             roundAngle == 0f
         )
     }
+
+    data class Arrow(
+        var start: PointF = PointF(0.0f, 0.0f),
+        var left: PointF = PointF(0.0f, 0.0f),
+        var right: PointF = PointF(0.0f, 0.0f))
 
     data class AngledLine(var angle: Float, var start: PointF = PointF(0.0f, 0.0f),
                           var end: PointF = PointF(0.0f, 0.0f), var isAnchor: Boolean = false

@@ -40,6 +40,19 @@ class MainActivity : AppCompatActivity(), CompassInterface {
         val viewPager = findViewById<ViewPager>(R.id.viewPager)
         viewPager.offscreenPageLimit = 4
         viewPager.adapter = Adapter()
+        viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+            }
+
+            override fun onPageSelected(position: Int) {
+                viewModel.setLastPage(position)
+            }
+        })
+        viewPager.setCurrentItem(viewModel.lastPage(), true)
+
         indicator = findViewById(R.id.indicator)
         indicator?.setViewPager(viewPager)
 
