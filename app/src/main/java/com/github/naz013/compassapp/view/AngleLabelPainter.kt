@@ -13,6 +13,7 @@ class AngleLabelPainter(private val paint: Paint) {
     private var secondarySolidColor: Int = Color.BLUE
     private val topRect = Rect()
     private val bottomRect = Rect()
+    private val textBounds = Rect()
 
     var textSizeDegree = 25f
     var textSize = 15f
@@ -51,12 +52,11 @@ class AngleLabelPainter(private val paint: Paint) {
     }
 
     private fun drawText(canvas: Canvas, text: String, paint: Paint, vGravity: Int, rect: Rect) {
-        val r = Rect()
-        paint.getTextBounds(text, 0, text.length, r)
+        paint.getTextBounds(text, 0, text.length, textBounds)
         if (vGravity == Gravity.TOP) {
-            canvas.drawText(text, rect.centerX().toFloat(), rect.top.toFloat() + r.height(), paint)
+            canvas.drawText(text, rect.centerX().toFloat(), rect.top.toFloat() + textBounds.height(), paint)
         } else {
-            canvas.drawText(text, rect.centerX().toFloat(), rect.bottom.toFloat() - r.height() / 2, paint)
+            canvas.drawText(text, rect.centerX().toFloat(), rect.bottom.toFloat() - textBounds.height() / 2, paint)
         }
     }
 
