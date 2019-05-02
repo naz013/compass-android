@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.annotation.ColorInt;
 import androidx.viewpager.widget.ViewPager;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class SpringIndicator extends FrameLayout {
 
     private float acceleration = 0.5f;
     private float headMoveOffset = 0.6f;
-    private float footMoveOffset = 1- headMoveOffset;
+    private float footMoveOffset = 1 - headMoveOffset;
     private float radiusMax;
     private float radiusMin;
     private float radiusOffset;
@@ -75,7 +76,7 @@ public class SpringIndicator extends FrameLayout {
         initAttrs(attrs);
     }
 
-    private void initAttrs(AttributeSet attrs){
+    private void initAttrs(AttributeSet attrs) {
         textColorId = R.color.si_default_text_color;
         selectedTextColorId = R.color.si_default_text_color_selected;
         indicatorColorId = R.color.si_default_indicator_bg;
@@ -94,19 +95,24 @@ public class SpringIndicator extends FrameLayout {
         radiusMin = a.getDimension(R.styleable.SpringIndicator_siRadiusMin, radiusMin);
         a.recycle();
 
-        if(indicatorColorsId != 0){
+        if (indicatorColorsId != 0) {
             indicatorColorArray = getResources().getIntArray(indicatorColorsId);
         }
         radiusOffset = radiusMax - radiusMin;
     }
 
+    public void setIndicatorColor(@ColorInt int color) {
+        if (springView != null) {
+            springView.setIndicatorColor(color);
+            invalidate();
+        }
+    }
 
     public void setViewPager(final ViewPager viewPager) {
         this.viewPager = viewPager;
         initSpringView();
         setUpListener();
     }
-
 
     private void initSpringView() {
         addPointView();
@@ -133,13 +139,13 @@ public class SpringIndicator extends FrameLayout {
         tabs = new ArrayList<>();
         for (int i = 0; i < viewPager.getAdapter().getCount(); i++) {
             TextView textView = new TextView(getContext());
-            if(viewPager.getAdapter().getPageTitle(i) != null){
+            if (viewPager.getAdapter().getPageTitle(i) != null) {
                 textView.setText(viewPager.getAdapter().getPageTitle(i));
             }
             textView.setGravity(Gravity.CENTER);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
             textView.setTextColor(getResources().getColor(textColorId));
-            if (textBgResId != 0){
+            if (textBgResId != 0) {
                 textView.setBackgroundResource(textBgResId);
             }
             textView.setLayoutParams(layoutParams);
@@ -147,7 +153,7 @@ public class SpringIndicator extends FrameLayout {
             textView.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(tabClickListener == null || tabClickListener.onTabClick(position)){
+                    if (tabClickListener == null || tabClickListener.onTabClick(position)) {
                         viewPager.setCurrentItem(position);
                     }
                 }
@@ -160,7 +166,7 @@ public class SpringIndicator extends FrameLayout {
     /**
      * Set current point position.
      */
-    private void createPoints(){
+    private void createPoints() {
         View view = tabs.get(viewPager.getCurrentItem());
         springView.getHeadPoint().setX(view.getX() + view.getWidth() / 2);
         springView.getHeadPoint().setY(view.getY() + view.getHeight() / 2);
@@ -168,7 +174,6 @@ public class SpringIndicator extends FrameLayout {
         springView.getFootPoint().setY(view.getY() + view.getHeight() / 2);
         springView.animCreate();
     }
-
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
@@ -179,15 +184,14 @@ public class SpringIndicator extends FrameLayout {
         }
     }
 
-
-    private void setUpListener(){
+    private void setUpListener() {
         viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 setSelectedTextColor(position);
-                if(delegateListener != null){
+                if (delegateListener != null) {
                     delegateListener.onPageSelected(position);
                 }
             }
@@ -197,34 +201,34 @@ public class SpringIndicator extends FrameLayout {
                 if (position < tabs.size() - 1) {
                     // radius
                     float radiusOffsetHead = 0.5f;
-                    if(positionOffset < radiusOffsetHead){
+                    if (positionOffset < radiusOffsetHead) {
                         springView.getHeadPoint().setRadius(radiusMin);
-                    }else{
-                        springView.getHeadPoint().setRadius(((positionOffset-radiusOffsetHead)/(1-radiusOffsetHead) * radiusOffset + radiusMin));
+                    } else {
+                        springView.getHeadPoint().setRadius(((positionOffset - radiusOffsetHead) / (1 - radiusOffsetHead) * radiusOffset + radiusMin));
                     }
                     float radiusOffsetFoot = 0.5f;
-                    if(positionOffset < radiusOffsetFoot){
-                        springView.getFootPoint().setRadius((1-positionOffset/radiusOffsetFoot) * radiusOffset + radiusMin);
-                    }else{
+                    if (positionOffset < radiusOffsetFoot) {
+                        springView.getFootPoint().setRadius((1 - positionOffset / radiusOffsetFoot) * radiusOffset + radiusMin);
+                    } else {
                         springView.getFootPoint().setRadius(radiusMin);
                     }
 
                     // x
                     float headX = 1f;
-                    if (positionOffset < headMoveOffset){
+                    if (positionOffset < headMoveOffset) {
                         float positionOffsetTemp = positionOffset / headMoveOffset;
-                        headX = (float) ((Math.atan(positionOffsetTemp*acceleration*2 - acceleration ) + (Math.atan(acceleration))) / (2 * (Math.atan(acceleration))));
+                        headX = (float) ((Math.atan(positionOffsetTemp * acceleration * 2 - acceleration) + (Math.atan(acceleration))) / (2 * (Math.atan(acceleration))));
                     }
                     springView.getHeadPoint().setX(getTabX(position) - headX * getPositionDistance(position));
                     float footX = 0f;
-                    if (positionOffset > footMoveOffset){
-                        float positionOffsetTemp = (positionOffset- footMoveOffset) / (1- footMoveOffset);
-                        footX = (float) ((Math.atan(positionOffsetTemp*acceleration*2 - acceleration ) + (Math.atan(acceleration))) / (2 * (Math.atan(acceleration))));
+                    if (positionOffset > footMoveOffset) {
+                        float positionOffsetTemp = (positionOffset - footMoveOffset) / (1 - footMoveOffset);
+                        footX = (float) ((Math.atan(positionOffsetTemp * acceleration * 2 - acceleration) + (Math.atan(acceleration))) / (2 * (Math.atan(acceleration))));
                     }
                     springView.getFootPoint().setX(getTabX(position) - footX * getPositionDistance(position));
 
                     // reset radius
-                    if(positionOffset == 0){
+                    if (positionOffset == 0) {
                         springView.getHeadPoint().setRadius(radiusMax);
                         springView.getFootPoint().setRadius(radiusMax);
                     }
@@ -237,14 +241,14 @@ public class SpringIndicator extends FrameLayout {
 
                 // set indicator colors
                 // https://github.com/TaurusXi/GuideBackgroundColorAnimation
-                if (indicatorColorsId != 0){
+                if (indicatorColorsId != 0) {
                     float length = (position + positionOffset) / viewPager.getAdapter().getCount();
                     int progress = (int) (length * INDICATOR_ANIM_DURATION);
                     seek(progress);
                 }
 
                 springView.postInvalidate();
-                if(delegateListener != null){
+                if (delegateListener != null) {
                     delegateListener.onPageScrolled(position, positionOffset, positionOffsetPixels);
                 }
             }
@@ -252,7 +256,7 @@ public class SpringIndicator extends FrameLayout {
             @Override
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
-                if(delegateListener != null){
+                if (delegateListener != null) {
                     delegateListener.onPageScrollStateChanged(state);
                 }
             }
@@ -270,14 +274,14 @@ public class SpringIndicator extends FrameLayout {
         return tabs.get(position).getX() + tabs.get(position).getWidth() / 2;
     }
 
-    private void setSelectedTextColor(int position){
+    private void setSelectedTextColor(int position) {
         for (TextView tab : tabs) {
             tab.setTextColor(getResources().getColor(textColorId));
         }
         tabs.get(position).setTextColor(getResources().getColor(selectedTextColorId));
     }
 
-    private void createIndicatorColorAnim(){
+    private void createIndicatorColorAnim() {
         indicatorColorAnim = ObjectAnimator.ofInt(springView, "indicatorColor", indicatorColorArray);
         indicatorColorAnim.setEvaluator(new ArgbEvaluator());
         indicatorColorAnim.setDuration(INDICATOR_ANIM_DURATION);
@@ -290,15 +294,15 @@ public class SpringIndicator extends FrameLayout {
         indicatorColorAnim.setCurrentPlayTime(seekTime);
     }
 
-    public List<TextView> getTabs(){
+    public List<TextView> getTabs() {
         return tabs;
     }
 
-    public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener){
+    public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
         this.delegateListener = listener;
     }
 
-    public void setOnTabClickListener(TabClickListener listener){
+    public void setOnTabClickListener(TabClickListener listener) {
         this.tabClickListener = listener;
     }
 }

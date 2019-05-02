@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity(), CompassInterface {
         mThemeListeners.forEach { it.invoke(palette) }
         bgView?.setBackgroundColor(palette.colorPrimary)
         window.statusBarColor = palette.colorPrimary
+        indicator?.setIndicatorColor(palette.colorSecondary)
         if (Build.VERSION.SDK_INT >= 23) {
             if (palette.isDark) {
                 bgView?.systemUiVisibility = -View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
