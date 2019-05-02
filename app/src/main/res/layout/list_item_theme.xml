@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/borderView"
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:layout_margin="8dp"
+    android:orientation="vertical"
+    android:padding="1dp">
+
+    <View
+        android:id="@+id/bgPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:id="@+id/bgSecondary"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

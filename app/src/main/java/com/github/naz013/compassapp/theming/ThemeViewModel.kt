@@ -21,6 +21,10 @@ class ThemeViewModel : ViewModel(), KoinComponent {
         _palette.postValue(paletteFromTheme(prefs.appTheme))
     }
 
+    fun getThemes(): List<Palette> {
+        return COLORS.toList()
+    }
+
     fun setTheme(theme: Int) {
         prefs.appTheme = theme
         _palette.postValue(paletteFromTheme(theme))

@@ -22,4 +22,15 @@
         app:siRadiusMax="5dp"
         app:siRadiusMin="3dp" />
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/themeButton"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="32dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:scaleType="centerInside"
+        app:srcCompat="@drawable/ic_twotone_palette_24px"
+        app:tint="#ffffff" />
+
 </RelativeLayout>
