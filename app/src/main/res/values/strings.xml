@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Compass Application</string>
+    <string name="hint_message">Swipe left or right to change style</string>
 </resources>

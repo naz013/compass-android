@@ -4,6 +4,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.fragment.app.Fragment
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity(), CompassInterface {
     private var themeButton: AppCompatImageView? = null
     private var compass: Compass? = null
     private var palette: Palette? = null
+    private var mDialog: BottomSheetDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,6 +71,9 @@ class MainActivity : AppCompatActivity(), CompassInterface {
                 applyTheme(it)
             }
         })
+        viewModel.showHint.observe(this, Observer {
+            if (it != null && it) Toast.makeText(this, getString(R.string.hint_message), Toast.LENGTH_LONG).show()
+        })
     }
 
     private fun showThemeDialog() {
@@ -86,6 +91,7 @@ class MainActivity : AppCompatActivity(), CompassInterface {
 
         dialog.setContentView(sheetView)
         dialog.show()
+        mDialog = dialog
     }
 
     private fun applyTheme(palette: Palette) {
@@ -125,6 +131,7 @@ class MainActivity : AppCompatActivity(), CompassInterface {
 
     private fun selectTheme(position: Int) {
         viewModel.setTheme(position)
+        mDialog?.dismiss()
     }
 
     inner class ThemeAdapter(val list: List<Palette>) : RecyclerView.Adapter<Holder>() {
