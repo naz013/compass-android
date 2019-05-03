@@ -14,10 +14,31 @@ android {
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        app {
+            storeFile file('release_key.jks')
+            storePassword 'compass03052019'
+            keyAlias 'compass.app'
+            keyPassword 'compass03052019'
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            debuggable false
+            zipAlignEnabled true
+            jniDebuggable false
+            signingConfig signingConfigs.app
+            applicationVariants.all { variant ->
+                variant.outputs.all {
+                    def formattedDate = new Date().format('yyyy-MM-dd')
+                    def newName = outputFileName
+                    newName = newName.replace("release", formattedDate)
+                    newName = newName.replace("app", "Compass")
+                    outputFileName = newName
+                }
+            }
         }
         debug {
             applicationVariants.all { variant ->
